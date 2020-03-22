@@ -1,29 +1,56 @@
-// Ambos valores son casos totales
-function get_factor_riesgo(infectados_ayer, infectados_hoy) {
-    /**
-     *  Este resultado depende de la probabilidad de contagio
-     *  y de el nivel de exposición de la sociedad. 
-     */
-    return parseFloat(infectados_hoy / infectados_ayer);
+class Covid {
+
+    casos
+    infectados_ayer
+    infectados_hoy
+
+    constructor(casos = [], infectados_hoy = undefined) {
+        this.casos = casos
+        this.infectados_ayer = this.casos.slice(-1)
+        this.infectados_hoy = infectados_hoy
+    }
+  
+    get factores_de_riesgo() {
+        return this.casos.map((caso, index) => {
+            if (index === this.casos.length - 1)
+                return this.infectados_hoy ? this.infectados_hoy / caso : 0
+            else
+                return this.casos[index + 1] / caso
+        })
+    }
+
+    get promedio_factores_de_riesgo() {
+        return this.factores_de_riesgo.reduce((anterior, actual) => actual += anterior)
+    }
+
+    get factor_riesgo_global() {
+      return this.promedio_factores_de_riesgo / this.casos.length
+    }
+
+    get nuevos_infectados() {
+        return !this.infectados_hoy
+            ? Math.round(this.infectados_ayer * this.factor_riesgo_global)
+            : Math.round(this.infectados_hoy * this.factor_riesgo_global)
+    }
 }
 
-// Ambos valores son casos totales
-function get_nuevos_infectados(infectados_ayer, infectados_hoy) {
-    /**
-     *  El FACTOR_RIESGO es muy importante, y sería deseable que valga cerca de 1
-     *  para que no haya nuevos casos.
-     */
-    const FACTOR_RIESGO = get_factor_riesgo(infectados_ayer, infectados_hoy);
-    let nuevos_infectados = infectados_hoy * FACTOR_RIESGO;
+const casos = [
+    12,
+    17,
+    19,
+    21,
+    31,
+    34,
+    45,
+    56,
+    65,
+    79,
+    98,
+    128,
+    158,
+    225
+]
 
-    return parseInt(nuevos_infectados, 10);
-}
+const covid = new Covid(casos)
 
-console.log({ riesgo: get_factor_riesgo(158, 225) });
-
-// let total = 0;
-// for (let i = 1; i < 15; i++) {
-//   total += get_nuevos_infectados(128, 158);
-// }
-
-console.log(get_nuevos_infectados(158, 225));
+console.log({ nuevos_infectados: covid.nuevos_infectados })
