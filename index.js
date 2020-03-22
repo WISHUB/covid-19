@@ -6,7 +6,7 @@ class Covid {
 
     constructor(casos = [], infectados_hoy = undefined) {
         this.casos = casos
-        this.infectados_ayer = this.casos.length ? this.casos[this.casos.length - 1] : 0
+        this.infectados_ayer = this.casos.length ? this.casos[this.casos.length - 1] : undefined
         this.infectados_hoy = infectados_hoy
     }
 
@@ -22,15 +22,26 @@ class Covid {
     get promedio_factores_de_riesgo() {
 
         const factores_length = this.factores_de_riesgo.length
-        const suma_factores_de_riesgo = this.factores_de_riesgo
-            .reduce((total, factor_riesgo) => total += factor_riesgo)
 
-        return factores_length ? suma_factores_de_riesgo / factores_length : 0
+        if (factores_length) {
+
+            const suma_factores_de_riesgo = this.factores_de_riesgo
+                .reduce((total, factor_riesgo) => total += factor_riesgo)
+
+            return suma_factores_de_riesgo / factores_length
+        }
+
+        return 0
     }
 
     get nuevos_infectados() {
-        return !this.infectados_hoy ?
-            Math.round(this.infectados_ayer * this.promedio_factores_de_riesgo) :
-            Math.round(this.infectados_hoy * this.promedio_factores_de_riesgo)
+
+        const infectados = !this.infectados_hoy ? this.infectados_ayer : this.infectados_hoy
+
+        if (this.promedio_factores_de_riesgo) {
+            return Math.round(infectados * this.promedio_factores_de_riesgo)
+        }
+
+        return 0
     }
 }
